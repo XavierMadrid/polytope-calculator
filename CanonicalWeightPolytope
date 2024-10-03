@@ -1,0 +1,42 @@
+loadPackage("ThinSincereQuivers", Reload => true);
+needsPackage("Polyhedra", Reload => true);
+needsPackage("LatticePolytopes", Reload => true);
+
+Q1 = {{0, 1}, {1, 2}, {1, 2}, {3, 2}};
+Q = toricQuiver(Q1);
+
+if isAcyclic(Q) then {
+    
+    canonicalW = Q#((keys Q)#1);
+    if (instance(Q#((keys Q)#1), List) and #(Q#((keys Q)#1)) == #(quiverWeights(Q))) then {
+        canonicalW = Q#((keys Q)#1);        
+        } else {
+        canonicalW = Q#((keys Q)#0);
+        };
+        
+    << endl << endl << "----Canonical Weight Polytope----" << endl;
+    << "Canonical Weight: " << canonicalW << endl;
+    canV = flowPolytopeVertices(canonicalW, Q, Format => "SimplifiedBasis");
+    << "Stable trees:" << endl;
+    tc = stableTrees(canonicalW, Q);
+        
+    --<< tc << endl;
+    for j from 0 to #tc - 1 do {
+        << tc#j << endl;
+        };
+    
+    << "Polytope vertices with simplified basis: " << endl;
+    for j from 0 to #canV - 1 do {    
+        
+        if (false) then {          
+            << canV#j << endl;
+        } else {
+            << "P" << j + 1 << " = (";
+            for k from 0 to #(canV#0) - 2 do {
+                << canV#j#k << ", ";      
+                };
+            << canV#j#(#(canV#0) - 1) << ")" << endl;
+            };
+        };
+    
+    } else << "Q is not acyclic."; 
