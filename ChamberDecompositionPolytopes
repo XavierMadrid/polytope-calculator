@@ -1,0 +1,138 @@
+loadPackage("ThinSincereQuivers", Reload => true);
+needsPackage("Polyhedra", Reload => true);
+needsPackage("LatticePolytopes", Reload => true);
+
+-- Input your quiver (acyclic directed graph) below by specifying the edges.
+-- For example, if your quiver has an edge from vertex 0 to vertex 1, 
+-- then include {0, 1} in Q1.
+Q1 = {{0, 1}, {1, 2}, {1, 2}, {0, 2}};
+Q = toricQuiver(Q1);
+
+STs = allSpanningTrees(Q); 
+allArrows = entries transpose quiverIncidenceMatrix Q;
+QDim = #(Q#((keys Q)#5)) - #(Q#((keys Q)#4)) + 1;
+coneDim = #(Q#((keys Q)#4)) - 1; 
+-- create list of cones CT for each tree T 
+treeChambers = unique for T in STs list(transpose matrix allArrows_T); 
+treeChambers = for T in treeChambers list(coneFromVData T);
+
+if isAcyclic(Q) then {
+    A = primitiveArrows(Q);
+    CQ = coneFromVData(quiverIncidenceMatrix(Q_A));
+    if #treeChambers > 1 then {
+        CG = coneSystem(Q);
+        rts = referenceThetas(CG);
+        }
+    else {
+        rts = referenceThetas(treeChambers);
+        };
+        
+    allt = allSpanningTrees(Q);
+    L = potentialWalls(Q);
+    Q0 = quiverVertices(Q);
+    
+    << "C(Q) is of dimension " << dim(CQ) << " with primitive arrows " << A << "." << endl;
+    
+    for i from 0 to #L - 1 do {
+                
+        vals = values L#i;
+        Qplus = vals#0;
+        Qminus = toList(set(Q0) - set(Qplus));
+        --<< "Vertices in Qplus: " << Qplus << endl;
+        
+        << "Primitive arrows describing wall " << i + 1 << ": ";
+        
+        for j from 0 to #Qplus - 1 do {
+            for k from j + 1 to #Qplus - 1 do {
+                
+                edge = {Qplus#j, Qplus#k};
+                for l from 0 to #Q1 - 1 do {
+                    primitive = false;
+                    if edge == Q1#l then {
+                        for m from 0 to #A - 1 do {
+                            if l == A#m then primitive = true;                          
+                            };
+                        if primitive then << l << "* " else << l << " ";
+                        
+                        };
+                    };         
+                };
+            };
+        
+        --<< endl;
+        
+        --<< "Vertices in Qminus: " << Qminus << endl;
+
+        for j from 0 to #Qminus - 1 do { 
+            for k from j + 1 to #Qminus - 1 do {
+                
+                edge = {Qminus#j, Qminus#k};
+                for l from 0 to #Q1 - 1 do {
+                    primitive = false;
+                    if edge == Q1#l then {
+                        for m from 0 to #A - 1 do {
+                            if l == A#m then primitive = true;                          
+                            };
+                        if primitive then << l << "* " else << l << " ";
+                        
+                        };
+                    };                
+                };
+            };
+        
+        << endl;
+        };
+
+        << "*: Arrow is primitive" << endl << endl;
+
+    << "---There are " << #rts << " chambers.---" << endl;
+    polytopes = {};
+    for i from 0 to #rts - 1 do {
+        
+        << "Theta from chamber " << i + 1 << ": " << endl;
+        << "Weight referenced from chamber: " << rts#i << endl;
+        << "Flow for weight above: " << incInverse(rts#i, Q) << endl;
+        << "Stable trees:" << endl;
+        t = stableTrees(rts#i, Q);
+        
+        --<< t << endl;
+        for j from 0 to #t - 1 do {
+            << t#j << endl;
+            };
+        
+        v = flowPolytopeVertices(rts#i, Q, Format => "SimplifiedBasis");
+        
+        << "Polytope vertices with simplified basis: " << endl;
+
+        for j from 0 to #v - 1 do {    
+            << v#j << endl;
+            };
+    
+    p = convexHull(transpose(matrix(v)));        
+        isUnique = true;
+        polytopeNumber = -1;
+        if #polytopes == 0 then {
+            isUnique = true;
+            } else {
+            for j from 0 to #polytopes - 1 do {
+                if (areIsomorphic(polytopes#j, p)) then {
+                    isUnique = false;
+                    polytopeNumber = j + 1;
+                    break;
+                    };
+                };           
+            };
+        
+        if isUnique then {
+                polytopes = append(polytopes, p);
+                << "Chamber has new polytope " << #polytopes << endl;
+                } else {
+                << "Chamber has polytope " << polytopeNumber << endl;
+                };
+            
+        << endl;
+        };
+    
+    << "There are " << #polytopes << " different polytopes." << endl;
+    
+    } else << "Q is not acyclic."; 
