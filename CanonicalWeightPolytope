@@ -2,6 +2,9 @@ loadPackage("ThinSincereQuivers", Reload => true);
 needsPackage("Polyhedra", Reload => true);
 needsPackage("LatticePolytopes", Reload => true);
 
+-- Input your quiver (acyclic directed graph) below by specifying the edges.
+-- For example, if your quiver has an edge from vertex 0 to vertex 1, 
+-- then include {0, 1} in Q1.
 Q1 = {{0, 1}, {1, 2}, {1, 2}, {3, 2}};
 Q = toricQuiver(Q1);
 
